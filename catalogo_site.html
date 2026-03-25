@@ -788,17 +788,29 @@
 
   // ── FETCH CSV ──
   async function fetchCSV(url) {
-    // Try direct fetch first, fall back to CORS proxy if blocked locally
+    // Try direct fetch, then multiple CORS proxies as fallback
     let text;
+    const proxies = [
+      `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      `https://thingproxy.freeboard.io/fetch/${url}`,
+    ];
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error('direct failed');
       text = await res.text();
     } catch(e) {
-      const proxy = 'https://corsproxy.io/?' + encodeURIComponent(url);
-      const res2 = await fetch(proxy);
-      if (!res2.ok) throw new Error('proxy failed');
-      text = await res2.text();
+      let loaded = false;
+      for (const proxy of proxies) {
+        try {
+          const res = await fetch(proxy);
+          if (!res.ok) continue;
+          text = await res.text();
+          loaded = true;
+          break;
+        } catch(e2) { continue; }
+      }
+      if (!loaded) throw new Error('all proxies failed');
     }
     const lines = text.trim().split('\n');
     if (lines.length < 2) return [];
