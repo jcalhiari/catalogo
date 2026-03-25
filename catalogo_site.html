@@ -615,43 +615,40 @@
 
 <!-- SETUP SCREEN -->
 <div id="setupScreen">
-  <div class="setup-card">
+  <div class="setup-card" style="max-width:640px;">
     <div class="setup-logo">Catálogo</div>
     <div class="setup-tagline">Montador de Catálogo de Calçados</div>
+
+    <p style="font-size:0.82rem;color:#777;margin-bottom:18px;line-height:1.7;">
+      Cole abaixo os dados da sua planilha. No Google Sheets selecione todas as linhas de produtos (sem o cabeçalho), copie com <strong>Cmd+C</strong> e cole aqui com <strong>Cmd+V</strong>.
+    </p>
 
     <div class="setup-step">
       <div class="step-num">1</div>
       <div class="step-text">
-        <div class="step-title">Abra o Google Sheets com seus produtos</div>
-        <div class="step-desc">Use a planilha modelo que foi enviada junto com este arquivo.</div>
+        <div class="step-title">Abra sua planilha no Google Sheets</div>
+        <div class="step-desc">Selecione da linha 5 em diante (todas as linhas com produtos), copie com Cmd+C.</div>
       </div>
     </div>
-
     <div class="setup-step">
       <div class="step-num">2</div>
       <div class="step-text">
-        <div class="step-title">Compartilhe a planilha como pública</div>
-        <div class="step-desc">No Google Sheets: clique em <strong>Compartilhar</strong> (canto superior direito) → <strong>Alterar para qualquer pessoa com o link</strong> → permissão <strong>Visualizador</strong> → Concluir.</div>
-      </div>
-    </div>
-
-    <div class="setup-step">
-      <div class="step-num">3</div>
-      <div class="step-text">
-        <div class="step-title">Cole o link da planilha abaixo</div>
-        <div class="step-desc">Copie o link da barra de endereços do navegador com a planilha aberta. Começa com <span class="step-code">https://docs.google.com/spreadsheets/d/</span></div>
+        <div class="step-title">Cole no campo abaixo</div>
+        <div class="step-desc">O formato esperado é: SKU, Nome, Preço, URL da Foto, Grade — separados por vírgula ou tabulação.</div>
       </div>
     </div>
 
     <hr class="setup-divider">
 
-    <div class="setup-input-label">Link da planilha do Google Sheets</div>
-    <input class="setup-input" id="sheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/XXXX/edit">
-    <div class="setup-error" id="setupError">Não foi possível carregar a planilha. Verifique o link e tente novamente.</div>
-    <button class="setup-btn" onclick="connectSheet()">Conectar planilha →</button>
+    <div class="setup-input-label">Dados dos produtos</div>
+    <textarea id="csvInput" style="width:100%;height:180px;padding:12px;border:1.5px solid #e6ddd3;border-radius:4px;font-family:monospace;font-size:0.76rem;color:#1a1410;background:white;resize:vertical;outline:none;line-height:1.6;margin-bottom:8px;" placeholder="1000-Dourada	Sapatilha dourada com laço	34,99	https://drive.google.com/file/d/17Ruy4LUNBpecEw7B0gFxi0dUZR18CDzb/view?usp=sharing	20/27
+1000-Bronze	Sapatilha bronze com laço	34,99	https://drive.google.com/file/d/1yEpRuSXg90l4cT5RlR1jQ24NE0d_F9Ns/view?usp=sharing	20/27"></textarea>
 
-    <div style="margin-top:16px;font-size:0.72rem;color:#bbb;text-align:center;">
-      O link fica salvo neste navegador. Só é necessário configurar uma vez.
+    <div class="setup-error" id="setupError">Nenhum produto encontrado. Verifique o formato dos dados.</div>
+    <button class="setup-btn" onclick="connectSheet()">Carregar produtos →</button>
+
+    <div style="margin-top:14px;font-size:0.72rem;color:#bbb;text-align:center;">
+      Os dados ficam salvos no navegador. Só precisa colar uma vez por dispositivo.
     </div>
   </div>
 </div>
@@ -747,26 +744,26 @@
     const savedSel = localStorage.getItem(LS_SEL);
     if (savedSel) selected = new Set(JSON.parse(savedSel));
 
-    const url = localStorage.getItem(LS_SHEET);
-    if (url) {
-      document.getElementById('sheetUrl').value = url;
+    const saved = localStorage.getItem(LS_SHEET);
+    if (saved) {
       connectSheet(true);
     }
   };
 
   // ── CONNECT SHEET ──
-  async function connectSheet(silent = false) {
-    const url = document.getElementById('sheetUrl').value.trim();
-    if (!url) return;
-
-    if (!silent) showLoading();
+  function connectSheet(silent = false) {
     document.getElementById('setupError').style.display = 'none';
+    const raw = silent
+      ? localStorage.getItem(LS_SHEET) || ''
+      : (document.getElementById('csvInput') ? document.getElementById('csvInput').value.trim() : '');
+
+    if (!raw) return;
 
     try {
-      const data = await fetchCSV(url);
+      const data = parseRawData(raw);
       if (!data || data.length === 0) throw new Error('empty');
 
-      localStorage.setItem(LS_SHEET, url);
+      localStorage.setItem(LS_SHEET, raw);
       products = data;
       filtered = [...products];
 
@@ -778,56 +775,31 @@
       renderList();
       renderCatalog();
       updateSyncStatus();
-      if (!silent) showToast('Planilha conectada com sucesso!');
+      if (!silent) showToast('Produtos carregados com sucesso!');
     } catch(e) {
-      document.getElementById('setupError').style.display = 'block';
+      if (!silent) document.getElementById('setupError').style.display = 'block';
     }
-    hideLoading();
   }
 
-  // ── FETCH via Google Sheets JSON API (no CORS issues) ──
-  async function fetchCSV(url) {
-    // Extract spreadsheet ID from any Google Sheets URL format
-    const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-    if (!match) throw new Error('URL inválida — não encontrei o ID da planilha.');
-    const sheetId = match[1];
-
-    // Use Google Visualization API — works without API key, no CORS issues
-    const apiUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Produtos`;
-    const res = await fetch(apiUrl);
-    if (!res.ok) throw new Error('Erro ao acessar a planilha');
-    const raw = await res.text();
-
-    // Google wraps response in /*O_o*/ google.visualization.Query.setResponse({...});
-    const jsonStr = raw.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
-    if (!jsonStr) throw new Error('Formato inesperado');
-    const json = JSON.parse(jsonStr[1]);
-
-    const cols = json.table.cols.map(c => c.label.toLowerCase().trim());
+  // ── PARSE RAW PASTED DATA (tab or comma separated) ──
+  function parseRawData(raw) {
+    const lines = raw.trim().split('\n').filter(l => l.trim());
     const rows = [];
-
-    for (const row of json.table.rows) {
-      if (!row || !row.c) continue;
-      const obj = {};
-      cols.forEach((col, i) => {
-        const cell = row.c[i];
-        obj[col] = cell ? (cell.v !== null && cell.v !== undefined ? String(cell.v) : '') : '';
-      });
-
-      if (!obj['sku']) continue;
-      if (obj['ativo'] && obj['ativo'].toLowerCase() === 'n') continue;
-
-      // Handle price — Google may return as number or string
-      const priceRaw = obj['preco'] || obj['preço'] || '0';
-      const price = parseFloat(String(priceRaw).replace('R$','').replace('.','').replace(',','.').trim()) || 0;
-
+    for (const line of lines) {
+      // Support both tab-separated (from Google Sheets copy) and comma-separated
+      const sep = line.includes('\t') ? '\t' : ',';
+      const parts = line.split(sep).map(s => s.trim().replace(/^"|"$/g, ''));
+      if (parts.length < 2) continue;
+      const [sku, name, priceRaw, urlFoto, cat] = parts;
+      if (!sku || sku.toLowerCase() === 'sku') continue; // skip header row if pasted
+      const price = parseFloat((priceRaw || '0').replace('R$','').replace(/\.(?=\d{3})/g,'').replace(',','.').trim()) || 0;
       rows.push({
-        id: obj['sku'],
-        sku: obj['sku'],
-        name: obj['nome'] || '',
+        id: sku,
+        sku,
+        name: name || '',
         price,
-        img: convertDriveUrl(obj['url_foto'] || ''),
-        cat: obj['categoria'] || ''
+        img: convertDriveUrl(urlFoto || ''),
+        cat: cat || ''
       });
     }
     return rows;
@@ -845,24 +817,13 @@
   }
 
   // ── SYNC ──
-  async function syncSheet() {
-    const url = localStorage.getItem(LS_SHEET);
-    if (!url) return;
-    showLoading();
-    try {
-      const data = await fetchCSV(url);
-      if (data && data.length > 0) {
-        products = data;
-        filtered = applySearch(products);
-        filtered = applyFilter(filtered);
-        renderFilters();
-        renderList();
-        renderCatalog();
-        updateSyncStatus();
-        showToast('Produtos atualizados!');
-      }
-    } catch(e) { showToast('Erro ao atualizar. Verifique a conexão.'); }
-    hideLoading();
+  function syncSheet() {
+    // Show setup screen again so user can paste updated data
+    document.getElementById('setupScreen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    const saved = localStorage.getItem(LS_SHEET) || '';
+    const ta = document.getElementById('csvInput');
+    if (ta) ta.value = saved;
   }
 
   function updateSyncStatus() {
