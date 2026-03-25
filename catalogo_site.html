@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo de Calçados</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1410;
+    --cream: #f8f4ef;
+    --sand: #e6ddd3;
+    --gold: #b8864e;
+    --gold-light: #d4aa78;
+    --gold-pale: #f5ede0;
+    --white: #ffffff;
+    --shadow-sm: 0 2px 12px rgba(26,20,16,0.08);
+    --shadow-md: 0 6px 32px rgba(26,20,16,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── SETUP SCREEN ── */
+  #setupScreen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: var(--ink);
+  }
+
+  .setup-card {
+    background: var(--cream);
+    border-radius: 4px;
+    padding: 52px 48px;
+    max-width: 560px;
+    width: 100%;
+    box-shadow: var(--shadow-md);
+  }
+
+  .setup-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .setup-tagline {
+    font-size: 0.8rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 36px;
+  }
+
+  .setup-step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--cream);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-text { flex: 1; }
+  .step-title { font-size: 0.9rem; font-weight: 500; margin-bottom: 3px; color: var(--ink); }
+  .step-desc { font-size: 0.78rem; color: #888; line-height: 1.5; }
+  .step-code {
+    display: inline-block;
+    background: var(--sand);
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    margin-top: 4px;
+    word-break: break-all;
+  }
+
+  .setup-divider {
+    border: none;
+    border-top: 1px solid var(--sand);
+    margin: 28px 0;
+  }
+
+  .setup-input-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #aaa;
+    margin-bottom: 8px;
+  }
+
+  .setup-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--sand);
+    border-radius: 4px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.88rem;
+    color: var(--ink);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .setup-input:focus { border-color: var(--gold); }
+
+  .setup-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 4px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .setup-btn:hover { background: #333; }
+
+  .setup-error {
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: #c0392b;
+    display: none;
+  }
+
+  /* ── MAIN APP ── */
+  #app { display: none; min-height: 100vh; flex-direction: column; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: var(--ink);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 58px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--cream);
+    letter-spacing: 0.04em;
+  }
+
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  .btn {
+    padding: 8px 18px;
+    border-radius: 3px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+  }
+
+  .btn-ghost-light {
+    background: transparent;
+    color: #aaa;
+    border: 1px solid #444;
+  }
+  .btn-ghost-light:hover { border-color: #888; color: var(--cream); }
+
+  .btn-gold {
+    background: var(--gold);
+    color: var(--white);
+  }
+  .btn-gold:hover { background: var(--gold-light); }
+
+  .btn-ink {
+    background: var(--ink);
+    color: var(--cream);
+    border: 1px solid var(--sand);
+  }
+  .btn-ink:hover { background: #333; }
+
+  .btn-sm { padding: 5px 12px; font-size: 0.72rem; }
+
+  /* ── LAYOUT ── */
+  .workspace {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    flex: 1;
+    min-height: calc(100vh - 58px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--white);
+    border-right: 1px solid var(--sand);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: sticky;
+    top: 58px;
+    height: calc(100vh - 58px);
+  }
+
+  .sidebar-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--sand);
+  }
+
+  .sidebar-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #aaa;
+    margin-bottom: 10px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--sand);
+    border-radius: 3px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.82rem;
+    color: var(--ink);
+    outline: none;
+    background: var(--cream);
+    transition: border-color 0.18s;
+  }
+  .search-input:focus { border-color: var(--gold); }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border: 1px solid var(--sand);
+    background: transparent;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Jost', sans-serif;
+  }
+  .filter-chip.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .filter-chip:hover:not(.active) { border-color: #aaa; color: var(--ink); }
+
+  .plist {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .plist-empty {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 0.82rem;
+    color: #bbb;
+    line-height: 1.6;
+  }
+
+  .pitem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 11px;
+    border-radius: 4px;
+    border: 1.5px solid var(--sand);
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .pitem:hover { border-color: #ccc; }
+  .pitem.sel { border-color: var(--gold); background: var(--gold-pale); }
+
+  .pitem-img {
+    width: 44px; height: 44px;
+    border-radius: 3px;
+    object-fit: cover;
+    background: var(--cream);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    overflow: hidden;
+  }
+  .pitem-img img { width: 44px; height: 44px; object-fit: cover; border-radius: 3px; }
+
+  .pitem-info { flex: 1; min-width: 0; }
+  .pitem-sku { font-size: 0.72rem; font-weight: 600; color: var(--ink); letter-spacing: 0.04em; }
+  .pitem-name { font-size: 0.75rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .pitem-price { font-size: 0.76rem; font-weight: 500; color: var(--gold); margin-top: 2px; }
+
+  .pitem-check {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--sand);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: transparent;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .pitem.sel .pitem-check {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: white;
+  }
+
+  .sidebar-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--sand);
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sel-count {
+    font-size: 0.78rem;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  /* ── PREVIEW AREA ── */
+  .preview-area {
+    background: var(--cream);
+    overflow-y: auto;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .preview-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 860px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .cols-selector { display: flex; gap: 5px; }
+  .col-opt {
+    width: 32px; height: 32px;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 500;
+    border: 1px solid var(--sand);
+    background: var(--white);
+    cursor: pointer;
+    color: #888;
+    transition: all 0.15s;
+    font-family: 'Jost', sans-serif;
+  }
+  .col-opt.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+  /* ── CATALOG PAGE ── */
+  .catalog-page {
+    background: var(--white);
+    max-width: 860px;
+    width: 100%;
+    padding: 44px 40px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .cat-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--sand);
+  }
+
+  .cat-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.03em;
+    line-height: 1;
+  }
+
+  .cat-brand-sub {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 5px;
+  }
+
+  .cat-meta { text-align: right; }
+  .cat-client-name { font-size: 0.88rem; font-weight: 500; color: var(--ink); }
+  .cat-date { font-size: 0.75rem; color: #aaa; margin-top: 3px; }
+
+  /* ── GRID ── */
+  .product-grid { display: grid; gap: 18px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+
+  .cat-card {
+    border: 1px solid var(--sand);
+    background: var(--cream);
+  }
+
+  .cat-card-img {
+    aspect-ratio: 1/1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sand);
+    font-size: 2.5rem;
+  }
+  .cat-card-img img { width: 100%; height: 100%; object-fit: cover; }
+
+  .cat-card-body { padding: 12px 14px 14px; background: var(--white); }
+  .cat-card-sku {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #bbb;
+    margin-bottom: 4px;
+  }
+  .cat-card-grade {
+    display: inline-block;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #b8864e;
+    background: #f5ede0;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-top: 6px;
+  }
+  .cat-card-name {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.35;
+    margin-bottom: 8px;
+    min-height: 22px;
+  }
+  .cat-card-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  .cat-footer {
+    margin-top: 28px;
+    padding-top: 14px;
+    border-top: 1px solid var(--sand);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: #ccc;
+  }
+
+  .catalog-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+    color: #bbb;
+    gap: 10px;
+  }
+  .catalog-empty span { font-size: 2.5rem; }
+  .catalog-empty p { font-size: 0.9rem; }
+  .catalog-empty small { font-size: 0.78rem; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--cream);
+    padding: 32px 36px;
+    max-width: 440px;
+    width: 95vw;
+    box-shadow: var(--shadow-md);
+  }
+  .modal h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #aaa;
+    margin-bottom: 6px;
+  }
+  .modal-field input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--sand);
+    border-radius: 3px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.18s;
+  }
+  .modal-field input:focus { border-color: var(--gold); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  /* ── LOADING ── */
+  .loading-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.6s ease;
+    z-index: 300;
+  }
+  .loading-bar.active { transform: scaleX(0.85); }
+  .loading-bar.done { transform: scaleX(1); opacity: 0; transition: transform 0.3s, opacity 0.4s 0.3s; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 12px 20px;
+    border-radius: 3px;
+    font-size: 0.82rem;
+    font-weight: 400;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 400;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── PRINT ── */
+  @media print {
+    .topbar, .sidebar, .preview-toolbar { display: none !important; }
+    .workspace { display: block; }
+    .preview-area { padding: 0; overflow: visible; background: white; }
+    .catalog-page { box-shadow: none; max-width: 100%; padding: 20px; }
+    .product-grid { gap: 10px; }
+  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--sand); }
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="loadingBar"></div>
+<div class="toast" id="toast"></div>
+
+<!-- SETUP SCREEN -->
+<div id="setupScreen">
+  <div class="setup-card">
+    <div class="setup-logo">Catálogo</div>
+    <div class="setup-tagline">Montador de Catálogo de Calçados</div>
+
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <div class="step-title">Abra o Google Sheets com seus produtos</div>
+        <div class="step-desc">Use a planilha modelo que foi enviada junto com este arquivo.</div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <div class="step-title">Publique a planilha para leitura</div>
+        <div class="step-desc">No Google Sheets: <strong>Arquivo → Compartilhar → Publicar na web</strong><br>
+        Selecione a aba <em>Produtos</em> e formato <em>CSV</em> → Publicar.</div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <div class="step-title">Cole o link de publicação abaixo</div>
+        <div class="step-desc">O link termina com <span class="step-code">output=csv</span></div>
+      </div>
+    </div>
+
+    <hr class="setup-divider">
+
+    <div class="setup-input-label">Link da planilha publicada (CSV)</div>
+    <input class="setup-input" id="sheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv">
+    <div class="setup-error" id="setupError">Não foi possível carregar a planilha. Verifique o link e tente novamente.</div>
+    <button class="setup-btn" onclick="connectSheet()">Conectar planilha →</button>
+
+    <div style="margin-top:16px;font-size:0.72rem;color:#bbb;text-align:center;">
+      O link fica salvo neste navegador. Só é necessário configurar uma vez.
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <div class="topbar">
+    <div class="topbar-brand" id="brandDisplay">Catálogo</div>
+    <div class="topbar-actions">
+      <span style="font-size:0.72rem;color:#555;letter-spacing:0.06em;" id="syncStatus">—</span>
+      <button class="btn btn-ghost-light btn-sm" onclick="syncSheet()">↻ Atualizar</button>
+      <button class="btn btn-ghost-light btn-sm" onclick="openCatalogModal()">✎ Dados</button>
+      <button class="btn btn-gold btn-sm" onclick="window.print()">Imprimir / PDF</button>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">Produtos disponíveis</div>
+        <input class="search-input" id="searchInput" type="text" placeholder="Buscar SKU ou nome..." oninput="filterProducts()">
+        <div class="filter-row" id="filterRow"></div>
+      </div>
+      <div class="plist" id="plist"></div>
+      <div class="sidebar-footer">
+        <span class="sel-count" id="selCount">0 selecionados</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ink btn-sm" onclick="clearSel()">Limpar</button>
+          <button class="btn btn-ink btn-sm" onclick="selAll()">Todos</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-area">
+      <div class="preview-toolbar">
+        <div class="cols-selector">
+          <div class="col-opt" onclick="setCols(2)" id="c2">2</div>
+          <div class="col-opt active" onclick="setCols(3)" id="c3">3</div>
+          <div class="col-opt" onclick="setCols(4)" id="c4">4</div>
+        </div>
+        <div style="font-size:0.75rem;color:#aaa;" id="previewCount"></div>
+      </div>
+      <div id="catalogOutput" style="width:100%;max-width:860px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATALOG MODAL -->
+<div class="modal-overlay" id="catalogModal">
+  <div class="modal">
+    <h3>Dados do catálogo</h3>
+    <div class="modal-field">
+      <label>Nome da sua empresa</label>
+      <input type="text" id="mBrand" placeholder="Ex: Calçados Silva">
+    </div>
+    <div class="modal-field">
+      <label>Nome do cliente</label>
+      <input type="text" id="mClient" placeholder="Ex: Loja do João">
+    </div>
+    <div class="modal-field">
+      <label>Data / período</label>
+      <input type="text" id="mDate" placeholder="Ex: Março 2025">
+    </div>
+    <div class="modal-field">
+      <label>Nota de rodapé</label>
+      <input type="text" id="mNote" placeholder="Ex: Preços válidos até 31/03">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ink" onclick="closeCatalogModal()">Cancelar</button>
+      <button class="btn btn-gold" onclick="saveCatalogData()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let products = [];
+  let filtered = [];
+  let selected = new Set();
+  let cols = 3;
+  let activeFilter = 'Todos';
+  let meta = { brand: '', client: '', date: '', note: '' };
+
+  const LS_SHEET = 'calcados_sheetUrl';
+  const LS_META = 'calcados_meta';
+  const LS_SEL = 'calcados_sel';
+
+  // ── INIT ──
+  window.onload = () => {
+    const saved = localStorage.getItem(LS_META);
+    if (saved) meta = JSON.parse(saved);
+
+    const savedSel = localStorage.getItem(LS_SEL);
+    if (savedSel) selected = new Set(JSON.parse(savedSel));
+
+    const url = localStorage.getItem(LS_SHEET);
+    if (url) {
+      document.getElementById('sheetUrl').value = url;
+      connectSheet(true);
+    }
+  };
+
+  // ── CONNECT SHEET ──
+  async function connectSheet(silent = false) {
+    const url = document.getElementById('sheetUrl').value.trim();
+    if (!url) return;
+
+    if (!silent) showLoading();
+    document.getElementById('setupError').style.display = 'none';
+
+    try {
+      const data = await fetchCSV(url);
+      if (!data || data.length === 0) throw new Error('empty');
+
+      localStorage.setItem(LS_SHEET, url);
+      products = data;
+      filtered = [...products];
+
+      document.getElementById('setupScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      document.getElementById('app').style.flexDirection = 'column';
+
+      renderFilters();
+      renderList();
+      renderCatalog();
+      updateSyncStatus();
+      if (!silent) showToast('Planilha conectada com sucesso!');
+    } catch(e) {
+      document.getElementById('setupError').style.display = 'block';
+    }
+    hideLoading();
+  }
+
+  // ── FETCH CSV ──
+  async function fetchCSV(url) {
+    // Try direct fetch first, fall back to CORS proxy if blocked locally
+    let text;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('direct failed');
+      text = await res.text();
+    } catch(e) {
+      const proxy = 'https://corsproxy.io/?' + encodeURIComponent(url);
+      const res2 = await fetch(proxy);
+      if (!res2.ok) throw new Error('proxy failed');
+      text = await res2.text();
+    }
+    const lines = text.trim().split('\n');
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g,'').toLowerCase());
+    const rows = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const cols_data = parseCSVLine(lines[i]);
+      if (cols_data.length < 2) continue;
+
+      const row = {};
+      headers.forEach((h, idx) => { row[h] = (cols_data[idx] || '').trim(); });
+
+      if (!row['sku']) continue;
+      if (row['ativo'] && row['ativo'].toLowerCase() === 'n') continue;
+
+      rows.push({
+        id: row['sku'],
+        sku: row['sku'],
+        name: row['nome'] || '',
+        price: parseFloat((row['preco'] || '0').replace(',', '.')) || 0,
+        img: convertDriveUrl(row['url_foto'] || ''),
+        cat: row['categoria'] || ''
+      });
+    }
+    return rows;
+  }
+
+  function parseCSVLine(line) {
+    const result = [];
+    let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === ',' && !inQ) { result.push(cur); cur = ''; continue; }
+      cur += ch;
+    }
+    result.push(cur);
+    return result;
+  }
+
+  function convertDriveUrl(url) {
+    if (!url) return '';
+    // Handle drive.google.com/file/d/ID/view
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    // Handle drive.google.com/open?id=ID
+    const match2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (match2) return `https://drive.google.com/uc?export=view&id=${match2[1]}`;
+    return url; // return as-is if already a direct URL
+  }
+
+  // ── SYNC ──
+  async function syncSheet() {
+    const url = localStorage.getItem(LS_SHEET);
+    if (!url) return;
+    showLoading();
+    try {
+      const data = await fetchCSV(url);
+      if (data && data.length > 0) {
+        products = data;
+        filtered = applySearch(products);
+        filtered = applyFilter(filtered);
+        renderFilters();
+        renderList();
+        renderCatalog();
+        updateSyncStatus();
+        showToast('Produtos atualizados!');
+      }
+    } catch(e) { showToast('Erro ao atualizar. Verifique a conexão.'); }
+    hideLoading();
+  }
+
+  function updateSyncStatus() {
+    const now = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('syncStatus').textContent = `Atualizado às ${now}`;
+  }
+
+  // ── FILTERS ──
+  function renderFilters() {
+    const cats = ['Todos', ...new Set(products.map(p => p.cat).filter(Boolean))];
+    const row = document.getElementById('filterRow');
+    row.innerHTML = cats.map(c => `
+      <button class="filter-chip ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>
+    `).join('');
+  }
+
+  function setFilter(cat) {
+    activeFilter = cat;
+    renderFilters();
+    filtered = applyFilter(applySearch(products));
+    renderList();
+  }
+
+  function filterProducts() {
+    filtered = applyFilter(applySearch(products));
+    renderList();
+  }
+
+  function applySearch(list) {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    if (!q) return [...list];
+    return list.filter(p => p.sku.toLowerCase().includes(q) || p.name.toLowerCase().includes(q));
+  }
+
+  function applyFilter(list) {
+    if (activeFilter === 'Todos') return list;
+    return list.filter(p => p.cat === activeFilter);
+  }
+
+  // ── PRODUCT LIST ──
+  function renderList() {
+    const el = document.getElementById('plist');
+    document.getElementById('brandDisplay').textContent = meta.brand || 'Catálogo';
+
+    if (!filtered.length) {
+      el.innerHTML = '<div class="plist-empty">Nenhum produto encontrado.</div>';
+      updateSelCount();
+      return;
+    }
+
+    el.innerHTML = filtered.map(p => `
+      <div class="pitem ${selected.has(p.id) ? 'sel' : ''}" onclick="toggleSel('${p.id}')">
+        <div class="pitem-img">
+          ${p.img
+            ? `<img src="${p.img}" onerror="this.parentElement.innerHTML='👟'" alt="${p.sku}">`
+            : '👟'}
+        </div>
+        <div class="pitem-info">
+          <div class="pitem-sku">${p.sku}</div>
+          ${p.name ? `<div class="pitem-name">${p.name}</div>` : ''}
+          <div class="pitem-price">R$ ${p.price.toFixed(2).replace('.',',')}</div>
+        </div>
+        <div class="pitem-check">✓</div>
+      </div>
+    `).join('');
+
+    updateSelCount();
+  }
+
+  function toggleSel(id) {
+    if (selected.has(id)) selected.delete(id);
+    else selected.add(id);
+    renderList();
+    renderCatalog();
+    localStorage.setItem(LS_SEL, JSON.stringify([...selected]));
+  }
+
+  function clearSel() {
+    selected.clear();
+    renderList();
+    renderCatalog();
+    localStorage.setItem(LS_SEL, JSON.stringify([]));
+  }
+
+  function selAll() {
+    filtered.forEach(p => selected.add(p.id));
+    renderList();
+    renderCatalog();
+    localStorage.setItem(LS_SEL, JSON.stringify([...selected]));
+  }
+
+  function updateSelCount() {
+    document.getElementById('selCount').textContent = `${selected.size} selecionado(s)`;
+  }
+
+  // ── COLS ──
+  function setCols(n) {
+    cols = n;
+    [2,3,4].forEach(x => {
+      const b = document.getElementById('c'+x);
+      if (b) b.classList.toggle('active', x === n);
+    });
+    renderCatalog();
+  }
+
+  // ── RENDER CATALOG ──
+  function renderCatalog() {
+    const sel = products.filter(p => selected.has(p.id));
+    const el = document.getElementById('catalogOutput');
+    const countEl = document.getElementById('previewCount');
+    countEl.textContent = `${sel.length} produto(s) no catálogo`;
+
+    if (!sel.length) {
+      el.innerHTML = `<div class="catalog-empty">
+        <span>📋</span>
+        <p>Selecione produtos para montar o catálogo</p>
+        <small>Clique nos calçados na lista ao lado</small>
+      </div>`;
+      return;
+    }
+
+    const brand = meta.brand || 'Sua Marca';
+    const date = meta.date || new Date().toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+
+    el.innerHTML = `
+      <div class="catalog-page">
+        <div class="cat-header">
+          <div>
+            <div class="cat-brand">${brand}</div>
+            <div class="cat-brand-sub">Catálogo de Produtos</div>
+          </div>
+          <div class="cat-meta">
+            ${meta.client ? `<div class="cat-client-name">${meta.client}</div>` : ''}
+            <div class="cat-date">${date}</div>
+          </div>
+        </div>
+
+        <div class="product-grid g${cols}">
+          ${sel.map(p => `
+            <div class="cat-card">
+              <div class="cat-card-img">
+                ${p.img
+                  ? `<img src="${p.img}" onerror="this.parentElement.innerHTML='👟'" alt="${p.sku}">`
+                  : '👟'}
+              </div>
+              <div class="cat-card-body">
+                <div class="cat-card-sku">Ref. ${p.sku}</div>
+                ${p.name ? `<div class="cat-card-name">${p.name}</div>` : '<div class="cat-card-name"></div>'}
+                <div class="cat-card-price">R$ ${p.price.toFixed(2).replace('.',',')}</div>
+                ${p.cat ? `<div class="cat-card-grade">Grade: ${p.cat}</div>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="cat-footer">
+          <span>${meta.note || 'Catálogo gerado para uso comercial'}</span>
+          <span>${sel.length} produto(s) · ${brand}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── CATALOG MODAL ──
+  function openCatalogModal() {
+    document.getElementById('mBrand').value = meta.brand;
+    document.getElementById('mClient').value = meta.client;
+    document.getElementById('mDate').value = meta.date;
+    document.getElementById('mNote').value = meta.note;
+    document.getElementById('catalogModal').classList.add('open');
+  }
+
+  function closeCatalogModal() {
+    document.getElementById('catalogModal').classList.remove('open');
+  }
+
+  function saveCatalogData() {
+    meta.brand = document.getElementById('mBrand').value;
+    meta.client = document.getElementById('mClient').value;
+    meta.date = document.getElementById('mDate').value;
+    meta.note = document.getElementById('mNote').value;
+    localStorage.setItem(LS_META, JSON.stringify(meta));
+    closeCatalogModal();
+    renderList();
+    renderCatalog();
+    showToast('Dados salvos!');
+  }
+
+  document.getElementById('catalogModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('catalogModal')) closeCatalogModal();
+  });
+
+  // ── UI HELPERS ──
+  function showLoading() {
+    const b = document.getElementById('loadingBar');
+    b.className = 'loading-bar active';
+  }
+  function hideLoading() {
+    const b = document.getElementById('loadingBar');
+    b.className = 'loading-bar done';
+    setTimeout(() => b.className = 'loading-bar', 700);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>
